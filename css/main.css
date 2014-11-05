@@ -12,7 +12,7 @@ form input[name='occupationOther'] {
     display: none;
 }
 
-.invalid {
+.invalid-form {
     border: 1px solid #FF0000;
 }
 

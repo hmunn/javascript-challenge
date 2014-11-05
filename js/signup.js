@@ -6,7 +6,7 @@
 
 //handles the DOM for the page
 document.addEventListener('DOMContentLoaded', function() {
-
+    //load states into the state selector
 	var signup = document.getElementById('signup')
 	var stateSelector = signup.elements['state'];
 	var option, state;
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         stateSelector.appendChild(option);
     }
 
-    
+    //reveals/hides the occupation other field
     signup.addEventListener('change', function(){
         var occupationSelected = signup.elements['occupation'];
         var otherOccupation = signup.elements['occupationOther'];
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     	}
     });
     
+    //handles the cancel button redirect
     var cancelButton = document.getElementById('cancelButton');
     cancelButton.addEventListener('click', function(){
     	if (window.confirm('Are you sure?')){
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    //handles the submit button logic
     signup.addEventListener('submit', onSubmit);
 
 });//end DOMLoaded/onReady
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function onSubmit(evt) {
     var valid = true;
     try{ valid = validateForm(this); }
-    catch(err){ console.log(err); }
+    catch(err){ valid = !valid }
 
     if (!valid) {
         var errMsg = document.getElementById('error-message');
@@ -76,7 +78,28 @@ function validateForm(form) {
     for(var idx = 0; idx < requiredFields.length; idx++) {
         valid &= validateRequiredField(form.elements[requiredFields[idx]]);
     }
+        
+    //extra validation for zip field
+    var zipField = form.elements['zip'];
+    var zipRegExp = new RegExp('^\\d{5}$');
+    if(!zipRegExp.test(zipField.value)){
+        valid = false;
+        zipField.className = 'form-control invalid-form';
+    }
     
+    //extra validation for birthdate field
+    var bday = form.elements['birthdate']; 
+    var bdayError = document.getElementById('birthdateMessage');
+    var age = calculateAge(bday.value);
+    if(age < 13){
+        valid = false;
+        bday.className = 'form-control invalid-form';
+        bdayError.style.display = 'block';
+        bdayError.innerHTML = "I am so sorry, but you must be at least 13 years old to signup."
+    } else {
+        bdayError.style.display = 'none';
+    }
+
     return valid;
 };//end validateForm
 
@@ -84,36 +107,15 @@ function validateForm(form) {
 //is valid and fits with the described rules
 function validateRequiredField(field) {
     var fieldValue = field.value;
+    var isValid = true;
     fieldValue = fieldValue.trim();
-    var isValid = fieldValue.length > 0;
+    isValid = fieldValue.length > 0;
     if(isValid) {
         field.className = 'form-control';
     } else {
-        field.className = 'form-control invalid';
+        field.className = 'form-control invalid-form';
     }
     
-    //extra validation for zip field
-    if(field.name === 'zip'){
-        var zipRegExp = new RegExp('^\\d{5}$');
-        if(!zipRegExp.test(fieldValue)){
-            isValid = !isValid;
-            field.className = 'form-control invalid';
-        }
-    }
-
-    //extra validation for birthdate field
-    if(field.name === 'birthdate'){
-        var bdayError = document.getElementById('birthdateMessage');
-        var age = calculateAge(fieldValue);
-        if(age < 13){
-            isValid = !isValid;
-            field.className = 'form-control invalid';
-            bdayError.style.display = 'block';
-            bdayError.innerHTML = "I am so sorry, but you must be at least 13 years old to signup."
-        } else {
-            bdayError.style.display = 'none';
-        }
-    }
     return isValid;
 };//end validateRequiredForm
 
